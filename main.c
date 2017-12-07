@@ -7,6 +7,9 @@
 #include <stdlib.h>
 
 int main(int argc, char** argv){
+  int id;
+  int val;
+  int key = ftok("./", 'm');
   if(argc < 2){
     printf("No arguments supplied\n");
     exit(0);
@@ -16,25 +19,25 @@ int main(int argc, char** argv){
       printf("No argument N supplied\n");
       exit(0);
     }
-    int size = sizeof(argv[2]);
-    int id = semget(ftok("./", 'm'), size, IPC_CREAT);
+    int size = sizeof(int);
+    id = semget(key, size, IPC_CREAT | IPC_EXCL | 0644);
     if(id == -1){
       printf("Error: %s\n", strerror(errno));
     }
     else{
       printf("Semaphore created: %d\n", id);
-      int val = semctl(id, 0, SETVAL, atoi(argv[2]));
+      val = semctl(id, 0, SETVAL, atoi(argv[2]));
       if(val == -1){
 	printf("Error: %s\n", strerror(errno));
       }
       else{
-	printf("Semaphore value set: %d\n", val);
+	printf("Semaphore value set: %d\n", atoi(argv[2]));
       }
     }
   }
   else if (!strcmp(argv[1], "-v")){
-    int id = semget(ftok("./", 'm'), 0, 0);
-    int val = semctl(id, 0, GETVAL);
+    id = semget(key, 0, 0);
+    val = semctl(id, 0, GETVAL);
     if(val == -1){
       printf("Error: %s\n", strerror(errno));
     }
@@ -43,8 +46,8 @@ int main(int argc, char** argv){
     }
   }
   else if (!strcmp(argv[1], "-r")){
-    int id = semget(ftok("./", 'm'), 0, 0);
-    int val = semctl(id, 0, IPC_RMID);
+    id = semget(key, 0, 0);
+    val = semctl(id, 0, IPC_RMID);
     if(val == -1){
       printf("Error: %s\n", strerror(errno));
     }
